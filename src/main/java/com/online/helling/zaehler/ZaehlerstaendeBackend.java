@@ -14,19 +14,17 @@ import java.util.EnumMap;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
-import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.NumberFormat;
@@ -36,8 +34,16 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -59,6 +65,9 @@ import com.online.helling.zaehler.dataaccess.model.Zaehler;
 import com.online.helling.zaehler.dataaccess.model.ZaehlerInfo;
 import com.online.helling.zaehler.dataaccess.model.Zaehlerverbrauch;
 import com.online.helling.zaehler.dataaccess.model.pixometer.Reading;
+import com.online.helling.zaehler.jwt.JwtRequest;
+import com.online.helling.zaehler.jwt.JwtResponse;
+import com.online.helling.zaehler.jwt.JwtTokenUtil;
 import com.online.helling.zaehler.util.ChartStand;
 import com.online.helling.zaehler.util.Medium;
 import com.online.helling.zaehler.util.Zeitreihe;
@@ -67,7 +76,6 @@ import com.online.helling.zaehler.util.Zeitreihe;
 @SpringBootApplication
 @ImportResource({ "classpath:META-INF/applicationContext.xml" })
 @RestController
-
 public class ZaehlerstaendeBackend {
 
 	private static Date DATE_2006;
@@ -78,13 +86,50 @@ public class ZaehlerstaendeBackend {
 	private static final DateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
 	private static final DecimalFormat df = new DecimalFormat("0.000");
 
-    static {
+	static {
 		try {
 			DATE_2006 = sdf.parse("01.01.2006");
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
 		df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.GERMAN));
+	}
+
+	@Autowired
+	private AuthenticationManager authenticationManager;
+
+	@Autowired
+	private JwtTokenUtil jwtTokenUtil;
+
+	@Autowired
+	private UserDetailsService jwtInMemoryUserDetailsService;
+
+	static ResourceBundle bundle = ResourceBundle.getBundle("config/application");
+
+	@RequestMapping(value = "/auth", method = { RequestMethod.POST, RequestMethod.GET })
+	public ResponseEntity<?> generateAuthenticationToken(@RequestBody JwtRequest authenticationRequest)
+			throws Exception {
+
+		authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
+
+		final UserDetails userDetails = jwtInMemoryUserDetailsService
+				.loadUserByUsername(authenticationRequest.getUsername());
+
+		final String token = jwtTokenUtil.generateToken(userDetails);
+
+		return ResponseEntity.ok(new JwtResponse(token));
+	}
+
+	private void authenticate(String username, String password) throws Exception {
+		Objects.requireNonNull(username);
+		Objects.requireNonNull(password);
+		try {
+			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+		} catch (DisabledException e) {
+			throw new Exception("USER_DISABLED", e);
+		} catch (BadCredentialsException e) {
+			throw new Exception("INVALID_CREDENTIALS", e);
+		}
 	}
 
 	public static String getCurrentUserName() {
@@ -101,25 +146,6 @@ public class ZaehlerstaendeBackend {
 	public static void main(String[] args) {
 		SpringApplicationBuilder app = new SpringApplicationBuilder().sources(ZaehlerstaendeBackend.class);
 		app.run(args);
-	}
-
-	@Bean
-	public TomcatServletWebServerFactory embeddedServletContainerFactory() {
-		return new TomcatServletWebServerFactory() {
-			protected void customizeConnector(Connector connector) {
-				int maxSize = 100;
-				super.customizeConnector(connector);
-				connector.setMaxPostSize(maxSize);
-				connector.setMaxSavePostSize(maxSize);
-				connector.setPort(8085);
-				if (connector.getProtocolHandler() instanceof AbstractHttp11Protocol) {
-
-					((AbstractHttp11Protocol<?>) connector.getProtocolHandler()).setMaxSwallowSize(maxSize);
-					logger.info("Set MaxSwallowSize " + maxSize);
-				}
-			}
-		};
-
 	}
 
 	@RequestMapping(path = "/getZaehlerInfo", produces = MediaType.APPLICATION_JSON_VALUE, method = { RequestMethod.GET,
@@ -246,6 +272,14 @@ public class ZaehlerstaendeBackend {
 	@ResponseBody
 	public String isAlive() {
 		return "OK";
+	}
+
+	public static String getTokenPrefix() {
+		return bundle.getString("token.prefix");
+	}
+
+	public static String getHeaderString() {
+		return bundle.getString("header.string");
 	}
 
 	@RequestMapping(value = "/getJahresstaende", method = { RequestMethod.GET, RequestMethod.POST })
