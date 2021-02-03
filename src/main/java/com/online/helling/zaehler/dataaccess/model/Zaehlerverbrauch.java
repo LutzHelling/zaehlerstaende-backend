@@ -47,7 +47,7 @@ public class Zaehlerverbrauch implements Serializable {
 	private ZaehlerverbrauchId id;
 
 	@Column(name = "zaehler_id")
-	private Integer zaehlerId;
+	private String zaehlerId;
 
 	@Column(name = "zaehlerstand")
 	private BigDecimal zaehlerstand;
@@ -133,7 +133,7 @@ public class Zaehlerverbrauch implements Serializable {
 		return vorMonatTechnisch;
 	}
 
-	public Integer getZaehlerId() {
+	public String getZaehlerId() {
 		return zaehlerId;
 	}
 
@@ -197,7 +197,7 @@ public class Zaehlerverbrauch implements Serializable {
 		this.vorMonatTechnisch = vorMonatTechnisch;
 	}
 
-	public void setZaehlerId(Integer zaehlerId) {
+	public void setZaehlerId(String zaehlerId) {
 		this.zaehlerId = zaehlerId;
 	}
 

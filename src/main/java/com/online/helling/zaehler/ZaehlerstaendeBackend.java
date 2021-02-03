@@ -158,7 +158,7 @@ public class ZaehlerstaendeBackend {
 		Medium medi = Medium.fromInt(medium);
 		Zaehler zaehler = zaehlerAccess.getZaehler(medi);
 		Zaehlerverbrauch ls = zaehlerAccess.getLastStand(medi);
-		int nummer = zaehler.getZaehlerId();
+		String nummer = zaehler.getZaehlerId();
 		ret.medium = medium;
 		ret.bezeichnung = medi.toString();
 		ret.nummer = nummer;

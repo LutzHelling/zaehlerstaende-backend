@@ -5,7 +5,7 @@ import java.util.Date;
 
 public class ZaehlerInfo {
 	public int medium;
-	public Integer nummer;
+	public String nummer;
 	public String bezeichnung;
 	public Date letzteAblesung;
 	public BigDecimal letzterStand;

@@ -36,7 +36,7 @@ public class Zaehler implements Serializable {
 
 	@Id
 	@Column(name = "zaehler_id")
-	private Integer zaehlerId;
+	private String zaehlerId;
 
 	@Column(name = "aktiv")
 	private Integer aktiv;
@@ -78,7 +78,7 @@ public class Zaehler implements Serializable {
 		return this.updatedAt;
 	}
 
-	public int getZaehlerId() {
+	public String getZaehlerId() {
 		return zaehlerId;
 	}
 
@@ -113,7 +113,7 @@ public class Zaehler implements Serializable {
 		this.updatedAt = updatedAt;
 	}
 
-	public void setZaehlerId(int zaehlerId) {
+	public void setZaehlerId(String zaehlerId) {
 		this.zaehlerId = zaehlerId;
 	}
 
