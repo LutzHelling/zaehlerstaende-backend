@@ -42,7 +42,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -202,18 +201,21 @@ public class ZaehlerstaendeBackend {
 	@RequestMapping(path = "/getAllStaende", produces = MediaType.APPLICATION_JSON_VALUE, method = { RequestMethod.GET,
 			RequestMethod.POST })
 	@ResponseBody
-	public String getAllStaende(@RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date start) {
+	public String getAllStaende(@RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
+			@RequestParam(name = "medium") Integer onlyMedium) {
 		EnumMap<Medium, Zeitreihe<BigDecimal>> allStaende = zaehlerAccess.getJahresstaende(start);
 		List<ChartStand<Date>> ret = new ArrayList<>(allStaende.size());
 		for (Medium medium : allStaende.keySet()) {
-			Zeitreihe<BigDecimal> zr = allStaende.get(medium);
-			zr.forEach(new Consumer<Pair<Date, BigDecimal>>() {
-				@Override
-				public void accept(Pair<Date, BigDecimal> elem) {
-					ChartStand<Date> tmp = new ChartStand<>(medium, elem.getLeft(), elem.getRight());
-					ret.add(tmp);
-				}
-			});
+			if ((onlyMedium == null) || (onlyMedium != null && medium.getTyp() == onlyMedium)) {
+				Zeitreihe<BigDecimal> zr = allStaende.get(medium);
+				zr.forEach(new Consumer<Pair<Date, BigDecimal>>() {
+					@Override
+					public void accept(Pair<Date, BigDecimal> elem) {
+						ChartStand<Date> tmp = new ChartStand<>(medium, elem.getLeft(), elem.getRight());
+						ret.add(tmp);
+					}
+				});
+			}
 		}
 
 		GsonBuilder gsonBuilder = new GsonBuilder();
@@ -292,13 +294,18 @@ public class ZaehlerstaendeBackend {
 	}
 
 	@RequestMapping(value = "/getAllJahresstaende", method = { RequestMethod.GET, RequestMethod.POST })
-	public @ResponseBody String getAllJahresstaende() {
+	public @ResponseBody String getAllJahresstaende(@RequestParam("medium") Integer medium) {
 
 		List<Jahresstand> temp = new ArrayList<>();
 		List<ChartStand<Integer>> ret = new ArrayList<>(temp.size());
-		for (Medium medium : Medium.values()) {
-			temp.addAll(zaehlerAccess.listJahresstaende(medium));
-		}
+		
+		if (medium == null)
+			for (Medium curMedium : Medium.values()) {
+				temp.addAll(zaehlerAccess.listJahresstaende(curMedium));
+			}
+		else
+			temp.addAll(zaehlerAccess.listJahresstaende(Medium.fromInt(medium)));
+		
 		temp.forEach(new Consumer<Jahresstand>() {
 			@Override
 			public void accept(Jahresstand t) {
