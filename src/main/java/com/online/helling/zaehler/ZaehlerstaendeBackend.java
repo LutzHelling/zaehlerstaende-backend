@@ -15,6 +15,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
@@ -202,11 +203,11 @@ public class ZaehlerstaendeBackend {
 			RequestMethod.POST })
 	@ResponseBody
 	public String getAllStaende(@RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
-			@RequestParam(name = "medium") Integer onlyMedium) {
+			@RequestParam(name = "medium") Optional<Integer> onlyMedium) {
 		EnumMap<Medium, Zeitreihe<BigDecimal>> allStaende = zaehlerAccess.getJahresstaende(start);
 		List<ChartStand<Date>> ret = new ArrayList<>(allStaende.size());
 		for (Medium medium : allStaende.keySet()) {
-			if ((onlyMedium == null) || (onlyMedium != null && medium.getTyp() == onlyMedium)) {
+			if ((onlyMedium.isEmpty()) || (onlyMedium.isPresent() && medium.getTyp() == onlyMedium.get())) {
 				Zeitreihe<BigDecimal> zr = allStaende.get(medium);
 				zr.forEach(new Consumer<Pair<Date, BigDecimal>>() {
 					@Override
@@ -294,17 +295,17 @@ public class ZaehlerstaendeBackend {
 	}
 
 	@RequestMapping(value = "/getAllJahresstaende", method = { RequestMethod.GET, RequestMethod.POST })
-	public @ResponseBody String getAllJahresstaende(@RequestParam("medium") Integer medium) {
+	public @ResponseBody String getAllJahresstaende(@RequestParam("medium") Optional<Integer> medium) {
 
 		List<Jahresstand> temp = new ArrayList<>();
 		List<ChartStand<Integer>> ret = new ArrayList<>(temp.size());
 		
-		if (medium == null)
+		if (medium.isEmpty())
 			for (Medium curMedium : Medium.values()) {
 				temp.addAll(zaehlerAccess.listJahresstaende(curMedium));
 			}
 		else
-			temp.addAll(zaehlerAccess.listJahresstaende(Medium.fromInt(medium)));
+			temp.addAll(zaehlerAccess.listJahresstaende(Medium.fromInt(medium.get())));
 		
 		temp.forEach(new Consumer<Jahresstand>() {
 			@Override
