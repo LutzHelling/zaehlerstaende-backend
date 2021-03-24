@@ -24,7 +24,7 @@ public class JwtTokenUtil implements Serializable {
 
 	private static final long serialVersionUID = -2550185165626007488L;
 
-	public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+	public static final long JWT_TOKEN_VALIDITY_MS = 1 * 60 * 60 * 1000; // 1 hour validity
 
 	@Value("Z1ZrWXAzczZ2OXkvQj9FKEgrTWJRZVRoV21acTR0N3cheiVDJkYpSkBOY1JmVWpYbjJyNXU4eC9BP0QoRy1LYQ==")
 	private String secret;
@@ -68,7 +68,7 @@ public class JwtTokenUtil implements Serializable {
 	private String doGenerateToken(Map<String, Object> claims, String subject) {
 		JwtBuilder temp = Jwts.builder().setClaims(claims).setSubject(subject)
 				.setIssuedAt(new Date(System.currentTimeMillis()))
-				.setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000));
+				.setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY_MS));
 		byte[] encodedKey = Base64.getDecoder().decode(secret);
 		SecretKey originalKey = new SecretKeySpec(encodedKey, 0, encodedKey.length,
 				SignatureAlgorithm.HS512.getJcaName());

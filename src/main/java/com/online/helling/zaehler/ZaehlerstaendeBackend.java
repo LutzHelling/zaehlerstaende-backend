@@ -78,8 +78,6 @@ import com.online.helling.zaehler.util.Zeitreihe;
 @RestController
 public class ZaehlerstaendeBackend {
 
-	private static Date DATE_2006;
-
 	@Autowired(required = true)
 	private ZaehlerAccess zaehlerAccess;
 
@@ -87,11 +85,6 @@ public class ZaehlerstaendeBackend {
 	private static final DecimalFormat df = new DecimalFormat("0.000");
 
 	static {
-		try {
-			DATE_2006 = sdf.parse("01.01.2006");
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
 		df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.GERMAN));
 	}
 
