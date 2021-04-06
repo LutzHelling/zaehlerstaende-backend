@@ -10,4 +10,5 @@ public class ZaehlerInfo {
 	public Date letzteAblesung;
 	public BigDecimal letzterStand;
 	public String einheit;
+	public double verbrauch12Monate;
 }

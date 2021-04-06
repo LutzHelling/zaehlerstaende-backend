@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -158,9 +157,22 @@ public class ZaehlerstaendeBackend {
 		ret.letzteAblesung = ls.getAktDate();
 		ret.letzterStand = getLastStand(medium);
 		ret.einheit = Medium.getEinheit(medi);
+		ret.verbrauch12Monate = zaehlerAccess.getJahressumme(medi, getJahreserster(ret.letzteAblesung));
 		String json = gson.toJson(ret);
 		System.out.println("Response: " + json);
 		return json;
+	}
+
+	private static Date getJahreserster(Date d) {
+		Calendar cal = GregorianCalendar.getInstance();
+		cal.setTime(d);
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		cal.set(Calendar.MONTH, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.HOUR, 0);
+		return cal.getTime();
 	}
 
 	@RequestMapping(path = "/getAllStaendeAsCSV", produces = MediaType.TEXT_PLAIN_VALUE, method = { RequestMethod.GET,
@@ -292,14 +304,14 @@ public class ZaehlerstaendeBackend {
 
 		List<Jahresstand> temp = new ArrayList<>();
 		List<ChartStand<Integer>> ret = new ArrayList<>(temp.size());
-		
+
 		if (medium.isEmpty())
 			for (Medium curMedium : Medium.values()) {
 				temp.addAll(zaehlerAccess.listJahresstaende(curMedium));
 			}
 		else
 			temp.addAll(zaehlerAccess.listJahresstaende(Medium.fromInt(medium.get())));
-		
+
 		temp.forEach(new Consumer<Jahresstand>() {
 			@Override
 			public void accept(Jahresstand t) {
