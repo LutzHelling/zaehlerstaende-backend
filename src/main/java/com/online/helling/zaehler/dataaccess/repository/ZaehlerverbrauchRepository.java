@@ -21,8 +21,8 @@ public interface ZaehlerverbrauchRepository extends CacheRepository<Zaehlerverbr
 
 	public Iterable<Zaehlerverbrauch> findAllByOrderByAktMonatNumericDesc();
 
-	@Query(value = "SELECT js FROM jahresstaende js WHERE js.id.typ=:medium AND js.id.jahr > 2004 ORDER BY js.id.jahr")
-	public List<Jahresstand> findAllJahresstaende(@Param("medium") Integer medium);
+	@Query(value = "SELECT js FROM jahresstaende js WHERE js.id.typ=:medium AND js.id.jahr > 2004 AND js.id.jahr < :endeJahr ORDER BY js.id.jahr")
+	public List<Jahresstand> findAllJahresstaende(@Param("medium") Integer medium, @Param("endeJahr") Integer endeJahr);
 
 	@Query(value = "SELECT max(zv.aktMonatNumeric) from Zaehlerverbrauch zv WHERE zv.id.typ=:typ and zv.aktMonatNumeric<:bezug")
 	public Integer findBezugBefore(@Param("typ") Integer typ, @Param("bezug") Integer bezug);

@@ -273,7 +273,9 @@ public class ZaehlerAccess implements Serializable {
 	}
 
 	public List<Jahresstand> listJahresstaende(Medium medium) {
-		return zvRepository.findAllJahresstaende(medium.getTyp());
+		Calendar cal = GregorianCalendar.getInstance();
+		cal.setTime(new Date());
+		return zvRepository.findAllJahresstaende(medium.getTyp(), cal.get(Calendar.YEAR));
 	}
 
 	public List<Zaehlerverbrauch> listAllVerbrauchsdaten() {
