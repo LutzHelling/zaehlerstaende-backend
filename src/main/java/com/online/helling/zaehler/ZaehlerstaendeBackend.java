@@ -225,15 +225,15 @@ public class ZaehlerstaendeBackend {
 		}
 
 		GsonBuilder gsonBuilder = new GsonBuilder();
-		gsonBuilder.registerTypeAdapter(ChartStand.class, new ChartStandSerializer()).setPrettyPrinting();
+		gsonBuilder.registerTypeAdapter(ChartStand.class, new ChartStandSerializer<Date>()).setPrettyPrinting();
 		Gson gson = gsonBuilder.setPrettyPrinting().create();
 		String json = gson.toJson(ret);
 		return json;
 	}
 
-	public class ChartStandSerializer implements JsonSerializer<ChartStand<Date>> {
+	public class ChartStandSerializer<T> implements JsonSerializer<ChartStand<T>> {
 		@Override
-		public JsonElement serialize(ChartStand src, Type typeOfSrc, JsonSerializationContext context) {
+		public JsonElement serialize(ChartStand<T> src, Type typeOfSrc, JsonSerializationContext context) {
 			JsonObject jsonObject = new JsonObject();
 			jsonObject.addProperty("medium", src.getMedium().getTyp());
 			if (src.getTime() instanceof Date)
@@ -321,7 +321,7 @@ public class ZaehlerstaendeBackend {
 		});
 
 		GsonBuilder gsonBuilder = new GsonBuilder();
-		gsonBuilder.registerTypeAdapter(ChartStand.class, new ChartStandSerializer()).setPrettyPrinting();
+		gsonBuilder.registerTypeAdapter(ChartStand.class, new ChartStandSerializer<Integer>()).setPrettyPrinting();
 		Gson gson = gsonBuilder.setPrettyPrinting().create();
 		String json = gson.toJson(ret);
 		return json;

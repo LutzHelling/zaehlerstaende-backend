@@ -1,16 +1,6 @@
 package com.online.helling.zaehler.util;
 
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 
 /**
  * Dient zum transportieren eines Stands für die Rest-Schnittstelle zum Anzeigen
@@ -24,9 +14,6 @@ import com.google.gson.JsonSerializer;
  * @param <BigDecimal>
  */
 public class ChartStand<T> {
-
-	private static final DateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
-	private static final DecimalFormat df = new DecimalFormat("0.000");
 
 	private Medium medium;
 	private T time;

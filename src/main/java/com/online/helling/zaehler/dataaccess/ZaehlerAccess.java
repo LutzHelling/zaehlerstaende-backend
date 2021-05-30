@@ -123,7 +123,6 @@ public class ZaehlerAccess implements Serializable {
 	}
 
 	public BigDecimal getJahresstandRaw(Medium medium, int year) {
-		int typ = medium.getTyp();
 		BigDecimal summeVerbrauchEinesJahres = zvRepository.sumVerbrauchByMediumAndJahr(medium.getTyp(), year);
 		return summeVerbrauchEinesJahres;
 	}
