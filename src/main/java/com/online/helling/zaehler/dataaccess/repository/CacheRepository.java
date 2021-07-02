@@ -6,7 +6,9 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.NoRepositoryBean;
 
+@NoRepositoryBean
 public interface CacheRepository<T,ID extends Serializable> extends CrudRepository<T, ID> {
 
     @Cacheable("cacheName")
